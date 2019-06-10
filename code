@@ -1,1 +1,57 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <iterator>
+#include <set>
+#include <ctime>
+#include <regex>
+#include <urlmon.h> 
+#pragma comment( lib, "urlmon" ) 
 
+
+bool download_file(std::string url, std::string path)
+{
+	return URLDownloadToFileA(nullptr, url.c_str(), path.c_str(), 0, nullptr) == S_OK;
+}
+
+std::string file_to_string(std::string file_name)
+{
+	std::ifstream file(file_name);
+	return { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>{} };
+}
+
+std::set<std::string> extract_links(std::string html_file_name)
+{
+	static const std::regex hl_regex("<a href=\"(.*?)\">", std::regex_constants::icase);
+
+	const std::string text = file_to_string(html_file_name);
+
+	return { std::sregex_token_iterator(text.begin(), text.end(), hl_regex, 1),
+			 std::sregex_token_iterator{} };
+}
+
+
+std::set<std::string> extract_title(std::string html_file_name)
+{
+	static const std::regex hl_regex("<title>(.*?)</title>", std::regex_constants::icase);
+
+	const std::string text = file_to_string(html_file_name);
+
+	return { std::sregex_token_iterator(text.begin(), text.end(), hl_regex, 1),
+			 std::sregex_token_iterator{} };
+}
+
+
+int main()
+{
+	time_t t = time(NULL);
+	tm* p = localtime(&t);
+
+
+	const std::string url = "https://npr.org/sections/arts";
+	const std::string path = "npr.html";
+	if (download_file(url, path))
+		for (std::string hlink : extract_links(path)) {
+
+		}
+}
